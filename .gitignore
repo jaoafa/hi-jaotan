@@ -1,0 +1,7 @@
+config/*
+!config/.gitkeep
+!config/default.sample.yml
+
+node_modules
+recordings/*
+!recordings/.gitkeep

@@ -1,0 +1,6 @@
+discordToken: TOKEN
+guilds:
+  - "GUILD ID"
+sendChannel: "TEXT CHANNEL ID"
+sendThread: "Thread ID"
+threadChannel: "ID of channel with thread"
