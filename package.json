@@ -20,7 +20,7 @@
   "devDependencies": {
     "@discordjs/opus": "0.5.3",
     "@discordjs/voice": "0.7.5",
-    "@types/config": "0.0.40",
+    "@types/config": "0.0.41",
     "@types/node-fetch": "3.0.3",
     "@types/wav": "1.0.1",
     "config": "3.3.6",
