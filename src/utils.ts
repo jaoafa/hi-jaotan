@@ -4,6 +4,9 @@ import {
   VoiceConnection,
 } from "@discordjs/voice";
 import { VoiceBasedChannel } from "discord.js";
+import { Readable } from "stream";
+
+export const SILENCE_FRAME = Buffer.from([0xf8, 0xff, 0xfe]);
 
 export async function joinChannel(
   channel: VoiceBasedChannel

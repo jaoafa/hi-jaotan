@@ -1,6 +1,7 @@
 import {
   entersState,
   getVoiceConnection,
+  VoiceConnection,
   VoiceConnectionStatus,
 } from "@discordjs/voice";
 import config from "config";
@@ -15,9 +16,10 @@ import fs from "fs";
 import { getClient } from "./main";
 import { recorder } from "./recorder";
 import { getSpeechRecognition } from "./speech-recognition";
-import { joinChannel } from "./utils";
+import { joinChannel, SILENCE_FRAME } from "./utils";
 
 let recordingUsers: string[] = [];
+let silences = new Map<Snowflake, NodeJS.Timer>();
 
 async function getUser(userId: Snowflake) {
   const client = getClient();
@@ -36,7 +38,7 @@ export async function Join(
     `Member ${member.user.tag} Join to ${channel.name} in ${guild.name}`
   );
   const joiningChannel = getVoiceConnection(guild.id);
-  let connection = null;
+  let connection: VoiceConnection | null = null;
   if (!joiningChannel) {
     // どこにも参加していないので参加する
     connection = await joinChannel(channel);
@@ -48,6 +50,10 @@ export async function Join(
     return;
   }
   if (connection) {
+    const timer = setInterval(() => {
+      if (connection) connection.playOpusPacket(SILENCE_FRAME);
+    }, 60000);
+    silences.set(guild.id, timer);
     try {
       await entersState(connection, VoiceConnectionStatus.Ready, 20e3);
       const receiver = connection.receiver;
@@ -80,8 +86,7 @@ export async function Join(
         getClient()
           .channels.fetch(config.get("sendChannel"))
           .then((channel) => {
-            if (channel instanceof TextChannel)
-              channel.send(message);
+            if (channel instanceof TextChannel) channel.send(message);
           });
 
         if (config.has("threadChannel") && config.get("sendThread")) {
