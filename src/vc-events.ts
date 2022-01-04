@@ -51,6 +51,7 @@ export async function Join(
   }
   if (connection) {
     const timer = setInterval(() => {
+      console.log("Send silence packet");
       if (connection) connection.playOpusPacket(SILENCE_FRAME);
     }, 60000);
     silences.set(guild.id, timer);
