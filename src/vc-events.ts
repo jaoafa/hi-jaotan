@@ -51,10 +51,15 @@ export async function Join(
   }
   if (connection) {
     const timer = setInterval(() => {
-      console.log("Send silence packet");
-      if (connection) connection.playOpusPacket(SILENCE_FRAME);
+      if (connection) {
+        const result = connection.playOpusPacket(SILENCE_FRAME);
+        console.log("Send silence packet: ", result);
+      }
     }, 60000);
+    const result = connection.playOpusPacket(SILENCE_FRAME);
+    console.log("Send silence packet: ", result);
     silences.set(guild.id, timer);
+
     try {
       await entersState(connection, VoiceConnectionStatus.Ready, 20e3);
       const receiver = connection.receiver;
