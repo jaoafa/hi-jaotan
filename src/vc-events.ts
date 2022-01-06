@@ -19,7 +19,6 @@ import { getSpeechRecognition } from "./speech-recognition";
 import { joinChannel, SILENCE_FRAME } from "./utils";
 
 let recordingUsers: string[] = [];
-let silences = new Map<Snowflake, NodeJS.Timer>();
 
 async function getUser(userId: Snowflake) {
   const client = getClient();
@@ -29,36 +28,10 @@ async function getUser(userId: Snowflake) {
   return await client.users.fetch(userId);
 }
 
-export async function Join(
-  guild: Guild,
-  channel: VoiceBasedChannel,
-  member: GuildMember
-) {
-  console.log(
-    `Member ${member.user.tag} Join to ${channel.name} in ${guild.name}`
-  );
-  const joiningChannel = getVoiceConnection(guild.id);
-  let connection: VoiceConnection | null = null;
-  if (!joiningChannel) {
-    // どこにも参加していないので参加する
-    connection = await joinChannel(channel);
-  } else if (joiningChannel.joinConfig.channelId == channel.id) {
-    // 同じチャンネルに参加しているので何もしない
-    return;
-  } else {
-    // それ以外(他のチャンネルに参加している)のときは、何もしない
-    return;
-  }
+export async function processJoin(connection: VoiceConnection | null) {
   if (connection) {
-    const timer = setInterval(() => {
-      if (connection) {
-        const result = connection.playOpusPacket(SILENCE_FRAME);
-        console.log("Send silence packet: ", result);
-      }
-    }, 60000);
     const result = connection.playOpusPacket(SILENCE_FRAME);
     console.log("Send silence packet: ", result);
-    silences.set(guild.id, timer);
 
     try {
       await entersState(connection, VoiceConnectionStatus.Ready, 20e3);
@@ -115,6 +88,29 @@ export async function Join(
   }
 }
 
+export async function Join(
+  guild: Guild,
+  channel: VoiceBasedChannel,
+  member: GuildMember
+) {
+  console.log(
+    `Member ${member.user.tag} Join to ${channel.name} in ${guild.name}`
+  );
+  const joiningChannel = getVoiceConnection(guild.id);
+  let connection: VoiceConnection | null = null;
+  if (!joiningChannel) {
+    // どこにも参加していないので参加する
+    connection = await joinChannel(channel);
+  } else if (joiningChannel.joinConfig.channelId == channel.id) {
+    // 同じチャンネルに参加しているので何もしない
+    return;
+  } else {
+    // それ以外(他のチャンネルに参加している)のときは、何もしない
+    return;
+  }
+  await processJoin(connection);
+}
+
 export async function Move(
   guild: Guild,
   oldChannel: VoiceBasedChannel,
@@ -124,6 +120,13 @@ export async function Move(
   console.log(
     `Member ${member.user.tag} Moved to ${newChannel.name} in ${guild.name} from ${oldChannel.name}`
   );
+
+  if (member.id == getClient().user?.id) {
+    const connection = getVoiceConnection(guild.id);
+    if (connection) {
+      await processJoin(connection);
+    }
+  }
 }
 
 export async function Leave(
@@ -134,4 +137,23 @@ export async function Leave(
   console.log(
     `Member ${member.user.tag} Leaved from ${channel.name} in ${guild.name}`
   );
+  const count = channel.members.filter(
+    (u) => u.id != getClient().user?.id && !u.user.bot
+  ).size;
+
+  if (member.id == getClient().user?.id) {
+    if (count != 0) {
+      console.log("🤖 Reconnecting...");
+      const connection = await joinChannel(channel);
+      await processJoin(connection);
+    }
+  } else {
+    if (count == 0) {
+      console.log("🤖 Disconnect");
+      const connection = getVoiceConnection(guild.id);
+      if (connection) {
+        connection.disconnect();
+      }
+    }
+  }
 }

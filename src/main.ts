@@ -1,6 +1,8 @@
+import { getVoiceConnection } from "@discordjs/voice";
 import config from "config";
 import { Client } from "discord.js";
-import { Join, Leave, Move } from "./vc-events";
+import { joinChannel, SILENCE_FRAME } from "./utils";
+import { Join, Leave, Move, processJoin } from "./vc-events";
 
 const client = new Client({
   intents: ["GUILD_VOICE_STATES", "GUILD_MESSAGES", "GUILDS"],
@@ -10,7 +12,41 @@ export function getClient() {
   return client;
 }
 
-client.on("ready", (client) => console.log("Ready: " + client.user.tag));
+client.on("ready", (client) => {
+  console.log("Ready: " + client.user.tag);
+
+  setInterval(() => {
+    client.guilds.cache.forEach((guild) => {
+      const connection = getVoiceConnection(guild.id);
+      if (connection) {
+        const result = connection.playOpusPacket(SILENCE_FRAME);
+        if (result === undefined) {
+          connection.destroy();
+        }
+        console.log(
+          `${guild.name} (${guild.id}): Send silence packet:`,
+          result
+        );
+      }
+    });
+  }, 60000);
+});
+
+client.on("messageCreate", async (message) => {
+  if (message.author.bot) return;
+  if (!message.guild) return;
+  if (!message.member) return;
+  if (!message.member.voice.channel) return;
+
+  const channel = message.member.voice.channel;
+
+  if (message.content.toLowerCase() === "!!join") {
+    const connection = await joinChannel(channel);
+    if (connection) {
+      await processJoin(connection);
+    }
+  }
+});
 
 client.on("voiceStateUpdate", (oldState, newState) => {
   if (newState && oldState) {
