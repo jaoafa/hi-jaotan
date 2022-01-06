@@ -44,6 +44,7 @@ client.on("messageCreate", async (message) => {
     const connection = await joinChannel(channel);
     if (connection) {
       await processJoin(connection);
+      await message.reply(":white_check_mark: Joined the channel");
     }
   }
 });
