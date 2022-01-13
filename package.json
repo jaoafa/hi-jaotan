@@ -24,7 +24,7 @@
     "@types/node-fetch": "3.0.3",
     "@types/wav": "1.0.1",
     "config": "3.3.7",
-    "discord.js": "13.5.1",
+    "discord.js": "13.6.0",
     "fluent-ffmpeg": "2.1.2",
     "js-yaml": "4.1.0",
     "libsodium-wrappers": "0.7.9",
