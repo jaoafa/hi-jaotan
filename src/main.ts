@@ -1,11 +1,15 @@
 import { getVoiceConnection } from "@discordjs/voice";
 import config from "config";
-import { Client } from "discord.js";
+import { Client, Intents } from "discord.js";
 import { joinChannel, SILENCE_FRAME } from "./utils";
 import { Join, Leave, Move, processJoin } from "./vc-events";
 
 const client = new Client({
-  intents: ["GUILD_VOICE_STATES", "GUILD_MESSAGES", "GUILDS"],
+  intents: [
+    Intents.FLAGS.GUILDS,
+    Intents.FLAGS.GUILD_MESSAGES,
+    Intents.FLAGS.GUILD_VOICE_STATES,
+  ],
 });
 
 export function getClient() {
@@ -73,7 +77,12 @@ client.on("voiceStateUpdate", (oldState, newState) => {
     if (
       oldState.channelId != null &&
       oldState.channel != null &&
-      newState.channelId === null
+      newState.channelId === null &&
+      newState.guild.members.resolve(client.user?.id!) != null &&
+      newState.guild.members.resolve(client.user?.id!)?.voice.channelId !==
+        null &&
+      newState.guild.members.resolve(client.user?.id!)?.voice.channelId !==
+        newState.channelId
     ) {
       Leave(newState.guild, oldState.channel, newState.member);
     }
@@ -89,4 +98,4 @@ client.on("voiceStateUpdate", (oldState, newState) => {
   }
 });
 
-client.login(config.get("discordToken"));
+client.login(config.get("discordToken")).catch((err) => console.error(err));
