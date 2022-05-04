@@ -1,15 +1,15 @@
-import { OpusEncoder } from "@discordjs/opus";
-import { EndBehaviorType, VoiceReceiver } from "@discordjs/voice";
-import { User } from "discord.js";
-import * as stream from "stream";
-import { FileWriter } from "wav";
+import { OpusEncoder } from '@discordjs/opus'
+import { EndBehaviorType, VoiceReceiver } from '@discordjs/voice'
+import { User } from 'discord.js'
+import * as stream from 'stream'
+import { FileWriter } from 'wav'
 
 class OpusDecodingStream extends stream.Transform {
-  encoder;
+  encoder
 
   constructor(options: stream.TransformOptions | undefined, encoder: any) {
-    super(options);
-    this.encoder = encoder;
+    super(options)
+    this.encoder = encoder
   }
 
   _transform(
@@ -17,8 +17,8 @@ class OpusDecodingStream extends stream.Transform {
     _encoding: BufferEncoding,
     callback: stream.TransformCallback
   ) {
-    this.push(this.encoder.decode(data));
-    callback();
+    this.push(this.encoder.decode(data))
+    callback()
   }
 }
 
@@ -28,8 +28,8 @@ export async function recorder(
   user?: User
 ): Promise<string> {
   return new Promise<string>((resolve, reject) => {
-    const filename = `./recordings/${Date.now()}-${user?.username}.wav`;
-    const encoder = new OpusEncoder(16000, 1);
+    const filename = `./recordings/${Date.now()}-${user?.username}.wav`
+    const encoder = new OpusEncoder(16000, 1)
     receiver
       .subscribe(userId, {
         end: {
@@ -45,7 +45,7 @@ export async function recorder(
         }),
         { end: true }
       )
-      .on("finish", () => resolve(filename))
-      .on("error", (e) => reject(e));
-  });
+      .on('finish', () => resolve(filename))
+      .on('error', (e) => reject(e))
+  })
 }
