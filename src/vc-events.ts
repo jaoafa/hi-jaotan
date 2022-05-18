@@ -140,6 +140,8 @@ export async function Leave(
   const count = channel.members.filter(
     (u) => u.id !== getClient().user?.id && !u.user.bot
   ).size
+  
+  const joiningChannel = getVoiceConnection(guild.id)
 
   if (member.id === getClient().user?.id) {
     if (count !== 0) {
@@ -147,7 +149,7 @@ export async function Leave(
       const connection = await joinChannel(channel)
       await processJoin(connection)
     }
-  } else {
+  } else if(joiningChannel && joiningChannel.joinConfig.channelId === channel.id) {
     if (count === 0) {
       console.log('🤖 Disconnect')
       const connection = getVoiceConnection(guild.id)
