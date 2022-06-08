@@ -24,16 +24,26 @@ client.on('ready', (client) => {
       const connection = getVoiceConnection(guild.id)
       const channelId = connection?.joinConfig.channelId
       if (connection) {
-        const result = connection.playOpusPacket(SILENCE_FRAME)
+        console.log(connection.state.status)
+        let result = connection.playOpusPacket(SILENCE_FRAME)
         if (result === undefined) {
-          connection.destroy()
           if (channelId)
             joinChannelId(channelId, guild).then((connection) => {
               processJoin(connection).then(() => {
                 console.log('Reconnected')
               })
             })
-          return
+
+          result = connection.playOpusPacket(SILENCE_FRAME)
+          if (result === undefined) {
+            client.destroy()
+            if (channelId)
+              joinChannelId(channelId, guild).then((connection) => {
+                processJoin(connection).then(() => {
+                  console.log('Reconnected')
+                })
+              })
+          }
         }
         console.log(`${guild.name} (${guild.id}): Send silence packet:`, result)
       }
