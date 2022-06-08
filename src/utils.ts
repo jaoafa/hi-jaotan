@@ -19,7 +19,7 @@ export async function joinChannelId(
 ): Promise<VoiceConnection | null> {
   try {
     const connection = joinVoiceChannel({
-      channelId: channelId,
+      channelId,
       guildId: guild.id,
       selfDeaf: false,
       selfMute: false,

@@ -5,3 +5,5 @@ config/*
 node_modules
 recordings/*
 !recordings/.gitkeep
+
+dist
