@@ -28,21 +28,37 @@ client.on('ready', (client) => {
         let result = connection.playOpusPacket(SILENCE_FRAME)
         if (result === undefined) {
           if (channelId)
-            joinChannelId(channelId, guild).then((connection) => {
-              processJoin(connection).then(() => {
-                console.log('Reconnected')
+            joinChannelId(channelId, guild)
+              .then((connection) => {
+                processJoin(connection)
+                  .then(() => {
+                    console.log('Reconnected')
+                  })
+                  .catch((err) => {
+                    console.log(err)
+                  })
               })
-            })
+              .catch((err) => {
+                console.log(err)
+              })
 
           result = connection.playOpusPacket(SILENCE_FRAME)
           if (result === undefined) {
             client.destroy()
             if (channelId)
-              joinChannelId(channelId, guild).then((connection) => {
-                processJoin(connection).then(() => {
-                  console.log('Reconnected')
+              joinChannelId(channelId, guild)
+                .then((connection) => {
+                  processJoin(connection)
+                    .then(() => {
+                      console.log('Reconnected')
+                    })
+                    .catch((err) => {
+                      console.log(err)
+                    })
                 })
-              })
+                .catch((err) => {
+                  console.log(err)
+                })
           }
         }
         console.log(`${guild.name} (${guild.id}): Send silence packet:`, result)
