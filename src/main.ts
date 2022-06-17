@@ -20,31 +20,14 @@ client.on('ready', (client) => {
   console.log('Ready: ' + client.user.tag)
 
   setInterval(() => {
-    client.guilds.cache.forEach((guild) => {
-      const connection = getVoiceConnection(guild.id)
-      const channelId = connection?.joinConfig.channelId
-      if (connection) {
-        console.log(connection.state.status)
-        let result = connection.playOpusPacket(SILENCE_FRAME)
-        if (result === undefined) {
-          if (channelId)
-            joinChannelId(channelId, guild)
-              .then((connection) => {
-                processJoin(connection)
-                  .then(() => {
-                    console.log('Reconnected')
-                  })
-                  .catch((err) => {
-                    console.log(err)
-                  })
-              })
-              .catch((err) => {
-                console.log(err)
-              })
-
-          result = connection.playOpusPacket(SILENCE_FRAME)
+    try {
+      client.guilds.cache.forEach((guild) => {
+        const connection = getVoiceConnection(guild.id)
+        const channelId = connection?.joinConfig.channelId
+        if (connection) {
+          console.log(connection.state.status)
+          let result = connection.playOpusPacket(SILENCE_FRAME)
           if (result === undefined) {
-            client.destroy()
             if (channelId)
               joinChannelId(channelId, guild)
                 .then((connection) => {
@@ -59,11 +42,35 @@ client.on('ready', (client) => {
                 .catch((err) => {
                   console.log(err)
                 })
+
+            result = connection.playOpusPacket(SILENCE_FRAME)
+            if (result === undefined) {
+              client.destroy()
+              if (channelId)
+                joinChannelId(channelId, guild)
+                  .then((connection) => {
+                    processJoin(connection)
+                      .then(() => {
+                        console.log('Reconnected')
+                      })
+                      .catch((err) => {
+                        console.log(err)
+                      })
+                  })
+                  .catch((err) => {
+                    console.log(err)
+                  })
+            }
           }
+          console.log(
+            `${guild.name} (${guild.id}): Send silence packet:`,
+            result
+          )
         }
-        console.log(`${guild.name} (${guild.id}): Send silence packet:`, result)
-      }
-    })
+      })
+    } catch (err) {
+      console.log(err)
+    }
   }, 60000)
 })
 
