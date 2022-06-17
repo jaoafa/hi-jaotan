@@ -1,7 +1,6 @@
-import { getVoiceConnection } from '@discordjs/voice'
 import config from 'config'
 import { Client, Intents } from 'discord.js'
-import { joinChannel, joinChannelId, SILENCE_FRAME } from './utils'
+import { joinChannel } from './utils'
 import { Join, Leave, Move, processJoin } from './vc-events'
 
 const client = new Client({
@@ -19,6 +18,7 @@ export function getClient() {
 client.on('ready', (client) => {
   console.log('Ready: ' + client.user.tag)
 
+  /*
   setInterval(() => {
     try {
       client.guilds.cache.forEach((guild) => {
@@ -72,6 +72,7 @@ client.on('ready', (client) => {
       console.log(err)
     }
   }, 60000)
+  */
 })
 
 client.on('messageCreate', async (message) => {

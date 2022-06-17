@@ -16,7 +16,7 @@ import fs from 'fs'
 import { getClient } from './main'
 import { recorder } from './recorder'
 import { getSpeechRecognition } from './speech-recognition'
-import { joinChannel, SILENCE_FRAME } from './utils'
+import { joinChannel } from './utils'
 
 let recordingUsers: string[] = []
 
@@ -30,8 +30,10 @@ async function getUser(userId: Snowflake) {
 
 export async function processJoin(connection: VoiceConnection | null) {
   if (connection) {
+    /*
     const result = connection.playOpusPacket(SILENCE_FRAME)
     console.log('Send silence packet: ', result)
+    */
 
     try {
       await entersState(connection, VoiceConnectionStatus.Ready, 20e3)
